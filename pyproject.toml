@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "src"
+version = "0.1.0"
+description = ""
+authors = ["Carlos Melo <carlos.fab@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ultralytics = "^8.1.29"
+supervision = "^0.19.0"
+tqdm = "^4.66.2"
+requests = "^2.31.0"
+streamlit = "^1.32.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
