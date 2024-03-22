@@ -2,7 +2,7 @@
 name = "src"
 version = "0.1.0"
 description = ""
-authors = ["Carlos Melo <carlos.fab@gmail.com>"]
+authors = ["Carlos Melo <carlos@sigmoidal.ai>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -17,8 +17,8 @@ numpy = "^1.26.4"
 
 [tool.poetry.dev-dependencies]
 isort = "^5.12.0"
-blue = "^0.9.1"
 pydocstyle = "^6.3.0"
+black = "^24.3.0"
 
 [build-system]
 requires = ["poetry-core"]
