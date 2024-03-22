@@ -1,0 +1,12 @@
+confidence: 0.4
+max_disappear: 10
+
+source:
+  - [642, 784]
+  - [1960, 881]
+  - [1146, 1009]
+  - [-161, 852]
+
+
+target_width: 280
+target_height: 220
