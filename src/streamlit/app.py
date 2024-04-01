@@ -1,12 +1,13 @@
-import streamlit as st
 import cv2
 import numpy as np
+
+import streamlit as st
 
 # Set the initial SOURCE and TARGET values
 SOURCE = np.array([[642, 784], [1960, 881], [1146, 1009], [-161, 852]])
 
-TARGET_WIDTH = 280
-TARGET_HEIGHT = 220
+TARGET_WIDTH = 300
+TARGET_HEIGHT = 260
 
 
 def transform_perspective(image, source, target_width, target_height):

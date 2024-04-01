@@ -2,49 +2,44 @@
 
 **UNDER CONSTRUCTION**
 
-## Table of Contents
-
-- [About](#about)
-- [Getting Started](#getting_started)
-- [Usage](#usage)
-- [Contributing](../CONTRIBUTING.md)
-
 ## About <a name = "about"></a>
 
 This project aims to estimate the takeoff speed of aircraft using computer vision techniques. By analyzing video footage of aircraft takeoffs, the system detects and tracks the aircraft, calculates their speed, and provides real-time speed estimations in knots. The project utilizes the YOLOv8 object detection model and the Supervision library for video analysis and annotation.
 
 The system can be useful for aviation enthusiasts, researchers, or professionals interested in monitoring and analyzing aircraft performance during takeoffs. It provides a non-intrusive way to estimate takeoff speeds and can potentially assist in identifying any unusual or abnormal takeoff patterns.
 
-## Getting Started <a name = "getting_started"></a>
+## Installation and Configuration
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
+Here are the steps you need to follow to set up your development environment:
 
-### Prerequisites
+1. Clone the [Github Repository](https://github.com/carlosfab/aircraft-takeoff-speed-estimation.git) to your local machine and access the `aircraft-takeoff-speed-estimation` folder:
 
-What things you need to install the software and how to install them.
+   ```bash
+   git clone https://github.com/carlosfab/aircraft-takeoff-speed-estimation.git
+   cd aircraft-takeoff-speed-estimation
+   ```
 
-```
-Give examples
-```
+2. Configure Poetry to create virtual environments within the project directory.
 
-### Installing
+   ```bash
+   poetry config virtualenvs.in-project true
+   ```
 
-A step by step series of examples that tell you how to get a development env running.
+3. Set up the `3.10.0` version of Python with Pyenv:
 
-Say what the step will be
+   ```bash
+   pyenv install 3.10.0
+   pyenv local 3.10.0
+   ```
 
-```
-Give the example
-```
+4. Install project dependencies:
 
-And repeat
+   ```bash
+   poetry install
+   ```
 
-```
-until finished
-```
+5. Activate the virtual environment.
 
-End with an example of getting some data out of the system or using it for a little demo.
-
-## Usage <a name = "usage"></a>
-
-Add notes about how to use the system.
+   ```bash
+   poetry shell
+   ```
