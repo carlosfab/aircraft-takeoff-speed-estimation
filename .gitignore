@@ -138,5 +138,5 @@ data/
 models/
 output
 docs
-src/old/
+old/
 ```
