@@ -1,5 +1,6 @@
-confidence: 0.4
-max_disappear: 10
+detection:
+  confidence_threshold: 0.2
+  nms_iou_threshold: 0.1
 
 source:
   - [642, 784]
@@ -7,6 +8,7 @@ source:
   - [1146, 1009]
   - [-161, 852]
 
-
-target_width: 280
-target_height: 220
+target:
+  width: 300
+  height: 260
+  reference: "../images/base_image_sdu_01.png" 

@@ -1,8 +1,9 @@
 import argparse
-from src.path import CONFIG_PATH, DATA_PATH, MODELS_PATH, OUTPUT_PATH
-import supervision as sv
+from pathlib import Path
 
-COLORS = sv.ColorPalette.DEFAULT
+import yaml
+
+from src.path import DATA_PATH, MODELS_PATH, OUTPUT_PATH
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -19,7 +20,7 @@ def parse_arguments() -> argparse.Namespace:
         required=False,
         help="Path to input video",
         type=str,
-        default=f"{DATA_PATH}/SDU_01.mp4",
+        default=f"{DATA_PATH}/santos_dumont_airport.mp4",
     )
     ap.add_argument(
         "-o",
@@ -35,6 +36,36 @@ def parse_arguments() -> argparse.Namespace:
         required=False,
         help="Path to YOLO model weights",
         type=str,
-        default=f"{MODELS_PATH}/yolov8x.pt",
+        default=f"{MODELS_PATH}/yolov8s.pt",
     )
+
     return ap.parse_args()
+
+
+def load_config(config_path: Path) -> dict:
+    """
+    Carrega uma configuração de um arquivo YAML.
+
+    Parâmetros:
+    - config_path (Path): O caminho para o arquivo de configuração YAML.
+
+    Retorna:
+    - dict: Um dicionário contendo as configurações carregadas do arquivo YAML.
+
+    Levanta:
+    - FileNotFoundError: Se o `config_path` não existir.
+    - yaml.YAMLError: Se houver um erro ao analisar o arquivo YAML.
+    """
+
+    if not config_path.exists():
+        raise FileNotFoundError(
+            f"Nenhum arquivo de configuração encontrado em {config_path}"
+        )
+
+    try:
+        with open(config_path, "r") as file:
+            data = yaml.safe_load(file)
+    except yaml.YAMLError as e:
+        raise yaml.YAMLError(f"Erro ao analisar o arquivo YAML: {e}")
+
+    return data
