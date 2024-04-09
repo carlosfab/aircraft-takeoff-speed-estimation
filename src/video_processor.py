@@ -1,6 +1,12 @@
-# video_processor.py
+"""
+Module for processing videos using object detection and tracking.
+
+This module provides a VideoProcessor class that can process a video file,
+detect objects, track them, and generate an annotated output video.
+"""
 
 from pathlib import Path
+from typing import Generator
 
 import cv2
 import numpy as np
@@ -15,6 +21,14 @@ SECONDARY_COLOR = sv.Color.from_hex("#016FB9")
 
 
 class VideoProcessor:
+    """
+    A class for processing videos using object detection and tracking.
+
+    This class takes a video file as input, applies object detection using a YOLO model,
+    tracks the detected objects, and generates an annotated output video with bounding boxes,
+    labels, and traces.
+    """
+
     def __init__(
         self,
         video_path: str,
@@ -23,6 +37,16 @@ class VideoProcessor:
         confidence_threshold: float = 0.2,
         nms_iou_threshold: float = 0.2,
     ) -> None:
+        """
+        Initialize the VideoProcessor.
+
+        Args:
+            video_path (str): Path to the input video file.
+            model_weights (str): Path to the YOLO model weights.
+            polygon_points (np.ndarray): Array of polygon points for the zone.
+            confidence_threshold (float, optional): Confidence threshold for object detection. Defaults to 0.2.
+            nms_iou_threshold (float, optional): NMS IOU threshold for object detection. Defaults to 0.2.
+        """
         self.video_path = video_path
         self.model = YOLO(model_weights)
         self.video_info = sv.VideoInfo.from_video_path(video_path)
@@ -34,7 +58,13 @@ class VideoProcessor:
         self.tracker = sv.ByteTrack()
         self.initialize_annotators()
 
-    def process_video(self, visualize: bool = True):
+    def process_video(self, visualize: bool = True) -> None:
+        """
+        Process the video and generate the output video with annotations.
+
+        Args:
+            visualize (bool, optional): Whether to visualize the processed frames. Defaults to True.
+        """
         frame_generator = self.get_video_generator()
 
         # Create the output file path with "output_" prefix and located in DATA_PATH
@@ -56,7 +86,16 @@ class VideoProcessor:
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
 
-    def process_frame(self, frame):
+    def process_frame(self, frame: np.ndarray) -> np.ndarray:
+        """
+        Process a single frame and return the annotated frame.
+
+        Args:
+            frame (np.ndarray): Input frame.
+
+        Returns:
+            np.ndarray: Annotated frame.
+        """
         annotated_frame = frame.copy()
 
         detections = self.detect_objects(frame)
@@ -71,11 +110,26 @@ class VideoProcessor:
 
         return annotated_frame
 
-    def get_video_generator(self):
+    def get_video_generator(self) -> Generator[np.ndarray, None, None]:
+        """
+        Get a generator that yields video frames.
+
+        Returns:
+            Generator[np.ndarray, None, None]: Generator yielding video frames.
+        """
         frame_generator = sv.get_video_frames_generator(self.video_path)
         return frame_generator
 
-    def detect_objects(self, frame):
+    def detect_objects(self, frame: np.ndarray) -> sv.Detections:
+        """
+        Detect objects in the given frame.
+
+        Args:
+            frame (np.ndarray): Input frame.
+
+        Returns:
+            sv.Detections: Detected objects.
+        """
         results = self.model(frame)[0]
         detections = sv.Detections.from_ultralytics(results)
         detections = detections[detections.class_id == 4]
@@ -85,7 +139,8 @@ class VideoProcessor:
 
         return detections
 
-    def initialize_annotators(self):
+    def initialize_annotators(self) -> None:
+        """Initialize the annotators."""
         self.round_box_annotator = sv.RoundBoxAnnotator(PRIMARY_COLOR)
         self.label_annotator = sv.LabelAnnotator(PRIMARY_COLOR)
         self.trace_annotator = sv.TraceAnnotator(SECONDARY_COLOR)

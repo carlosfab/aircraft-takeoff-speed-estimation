@@ -11,4 +11,3 @@ source:
 target:
   width: 300
   height: 260
-  reference: "../images/base_image_sdu_01.png" 
