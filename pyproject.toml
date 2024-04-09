@@ -16,14 +16,32 @@ opencv-python = "^4.9.0.80"
 numpy = "^1.26.4"
 sigmoidalvision = "^0.1.0"
 
+
 [tool.poetry.dev-dependencies]
 isort = "^5.12.0"
 pydocstyle = "^6.3.0"
 black = "^24.3.0"
+taskipy = "^1.12.2"
+flake8 = "^7.0.0"
+pip-audit = "^2.7.2"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.3"
+pytest = "^8.1.1"
+taskipy = "^1.12.2"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+known_third_party = []
+
+[tool.taskipy.tasks]
+format = "isort . && black ."
+docstyle = "pydocstyle src"
+test = "pytest -W ignore::DeprecationWarning"
+
+[tool.pytest.ini_options]
+addopts = "-W ignore::DeprecationWarning:distutils.version"

@@ -1,7 +1,14 @@
+# video_processor.py
+
+from pathlib import Path
+
 import cv2
 import numpy as np
 import supervision as sv
+from tqdm.auto import tqdm
 from ultralytics import YOLO
+
+from src.path import OUTPUT_PATH
 
 PRIMARY_COLOR = sv.Color.from_hex("#FF103F")
 SECONDARY_COLOR = sv.Color.from_hex("#016FB9")
@@ -10,94 +17,78 @@ SECONDARY_COLOR = sv.Color.from_hex("#016FB9")
 class VideoProcessor:
     def __init__(
         self,
-        source_video_path: str,
+        video_path: str,
         model_weights: str,
-        source_points: np.ndarray,
-        confidence_threshold: float,
-        nms_iou_threshold: float,
-        target_video_path: str = None,
-    ):
-        self.source_video_path = source_video_path
-        self.target_video_path = target_video_path
-        self.video_info = sv.VideoInfo.from_video_path(source_video_path)
-        self.source_points = source_points
+        polygon_points: np.ndarray,
+        confidence_threshold: float = 0.2,
+        nms_iou_threshold: float = 0.2,
+    ) -> None:
+        self.video_path = video_path
+        self.model = YOLO(model_weights)
+        self.video_info = sv.VideoInfo.from_video_path(video_path)
         self.confidence_threshold = confidence_threshold
         self.nms_iou_threshold = nms_iou_threshold
-        self.model = YOLO(model_weights)
-        self.tracker = sv.ByteTrack(
-            lost_track_buffer=60, frame_rate=self.video_info.fps
+        self.polygon_zone = sv.PolygonZone(
+            polygon_points, frame_resolution_wh=self.video_info.resolution_wh
         )
-
-        # Initialize model and processing tools
-        self.annotators = []  # Initialize the list of annotators
+        self.tracker = sv.ByteTrack()
         self.initialize_annotators()
 
-    def process_video(self):
-        frame_generator = sv.get_video_frames_generator(self.source_video_path)
+    def process_video(self, visualize: bool = True):
+        frame_generator = self.get_video_generator()
 
-        if self.target_video_path:
-            with sv.VideoSink(self.target_video_path, self.video_info) as sink:
-                for frame in frame_generator:
-                    processed_frame = self.process_frame(frame)
-                    sink.write_frame(processed_frame)
-                    self.plot_frame(processed_frame)
+        # Create the output file path with "output_" prefix and located in DATA_PATH
+        input_file_name = Path(self.video_path).stem
+        output_file_name = f"output_{input_file_name}.mp4"
+        self.output_path = str(OUTPUT_PATH / output_file_name)
 
-    def process_frame(self, frame: np.ndarray, imgsz: int = None) -> np.ndarray:
+        with sv.VideoSink(self.output_path, self.video_info) as sink:
+            for frame in tqdm(
+                frame_generator,
+                total=self.video_info.total_frames,
+                desc="Processing frames",
+            ):
+                annotated_frame = self.process_frame(frame)
+                sink.write_frame(annotated_frame)
+
+                if visualize:
+                    cv2.imshow("Video", annotated_frame)
+                    if cv2.waitKey(1) & 0xFF == ord("q"):
+                        break
+
+    def process_frame(self, frame):
+        annotated_frame = frame.copy()
+
+        detections = self.detect_objects(frame)
+
+        labels = [f"#{tracker_id}" for tracker_id in detections.tracker_id]
+
+        annotated_frame = self.round_box_annotator.annotate(annotated_frame, detections)
+        annotated_frame = self.label_annotator.annotate(
+            annotated_frame, detections, labels
+        )
+        annotated_frame = self.trace_annotator.annotate(annotated_frame, detections)
+
+        return annotated_frame
+
+    def get_video_generator(self):
+        frame_generator = sv.get_video_frames_generator(self.video_path)
+        return frame_generator
+
+    def detect_objects(self, frame):
         results = self.model(frame)[0]
-
         detections = sv.Detections.from_ultralytics(results)
-        detections = detections[detections.confidence > self.confidence_threshold]
         detections = detections[detections.class_id == 4]
+        detections = detections[detections.confidence > self.confidence_threshold]
         detections = detections.with_nms(self.nms_iou_threshold)
-        detections = detections[self.polygon_zone.trigger(detections)]
         detections = self.tracker.update_with_detections(detections)
 
-        transformed_frame = self.annotate_frame(frame, detections)
-
-        return transformed_frame
-
-    def plot_frame(self, frame: np.ndarray):
-        cv2.imshow("Processed Frame", frame)
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):
-            raise StopIteration
+        return detections
 
     def initialize_annotators(self):
-        """Initializes annotators for visualizing detections and tracking on video frames."""
-        self.polygon_zone = sv.PolygonZone(
-            self.source_points, self.video_info.resolution_wh
+        self.round_box_annotator = sv.RoundBoxAnnotator(PRIMARY_COLOR)
+        self.label_annotator = sv.LabelAnnotator(PRIMARY_COLOR)
+        self.trace_annotator = sv.TraceAnnotator(SECONDARY_COLOR)
+        self.polygon_zone_annotator = sv.PolygonZoneAnnotator(
+            zone=self.polygon_zone, color=SECONDARY_COLOR
         )
-
-        polygon_zone_annotator = sv.PolygonZoneAnnotator(
-            zone=self.polygon_zone,
-            color=SECONDARY_COLOR,
-            display_in_zone_count=False,
-        )
-
-        round_box_annotator = sv.RoundBoxAnnotator(color=PRIMARY_COLOR)
-        label_annotator = sv.LabelAnnotator(color=PRIMARY_COLOR)
-
-        # Add the annotators to the list
-        self.annotators.extend(
-            [polygon_zone_annotator, round_box_annotator, label_annotator]
-        )
-
-    def annotate_frame(self, frame: np.ndarray, detections) -> np.ndarray:
-        transformed_frame = frame.copy()
-
-        labels = [f"#{tracker_id}" for _, _, _, _, tracker_id, _ in detections]
-
-        for annotator in self.annotators:
-            if isinstance(annotator, sv.LabelAnnotator):
-                print(detections)
-                transformed_frame = annotator.annotate(
-                    transformed_frame, detections, labels
-                )
-
-            elif isinstance(annotator, sv.PolygonZoneAnnotator):
-                transformed_frame = annotator.annotate(transformed_frame)
-
-            elif isinstance(annotator, sv.RoundBoxAnnotator):
-                transformed_frame = annotator.annotate(transformed_frame, detections)
-
-        return transformed_frame
