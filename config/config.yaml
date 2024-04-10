@@ -1,6 +1,5 @@
-detection:
-  confidence_threshold: 0.2
-  nms_iou_threshold: 0.1
+confidence_threshold: 0.2
+nms_iou_threshold: 0.1
 
 source:
   - [642, 784]

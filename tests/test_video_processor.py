@@ -4,6 +4,8 @@ import os
 
 import cv2
 import numpy as np
+import tempfile
+import yaml
 import pytest
 import supervision as sv
 from ultralytics import YOLO
@@ -48,6 +50,20 @@ def video_processor(
         confidence_threshold,
         nms_iou_threshold,
     )
+
+
+# Fixture to create a temporary YAML configuration file
+@pytest.fixture
+def config_yaml():
+    config = {
+        "detection": {"confidence_threshold": 0.2, "nms_iou_threshold": 0.1},
+        "source": [[642, 784], [1960, 881], [1146, 1009], [-161, 852]],
+        "target": {"width": 300, "height": 260},
+    }
+    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as tmp:
+        yaml.dump(config, tmp)
+        yield tmp.name
+    os.remove(tmp.name)
 
 
 def test_load_yolo_model(video_processor, video_path):

@@ -21,8 +21,8 @@ class ViewTransformer:
             source_points (np.ndarray): Array of source points.
             destination_points (np.ndarray): Array of destination points.
         """
-        self.source_points = source_points
-        self.destination_points = destination_points
+        self.source_points = source_points.astype(np.float32)
+        self.destination_points = destination_points.astype(np.float32)
         self.transformation_matrix = cv2.getPerspectiveTransform(
             self.source_points, self.destination_points
         )

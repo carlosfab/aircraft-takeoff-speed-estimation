@@ -59,7 +59,7 @@ def test_calculate_speed_single_tracker(speed_estimator):
     speed = speed_estimator.estimate_speed(tracker_id)
 
     # Expected speed calculation
-    distance = end_x - start_x  # Distance covered
+    distance = end_x - start_x  # Distance covered      
     time = num_frames / speed_estimator.fps  # Time taken
     expected_speed = distance / time
 

@@ -36,7 +36,7 @@ def parse_arguments() -> argparse.Namespace:
         required=False,
         help="Path to YOLO model weights",
         type=str,
-        default=f"{MODELS_PATH}/yolov8s.pt",
+        default=f"{MODELS_PATH}/yolov8x.pt",
     )
 
     return ap.parse_args()
