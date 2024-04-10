@@ -1,5 +1,7 @@
 # Aircraft Takeoff Speed Estimation
 
+![Alt Text](images/poc.gif)
+
 **UNDER CONSTRUCTION**
 
 ## About <a name = "about"></a>
