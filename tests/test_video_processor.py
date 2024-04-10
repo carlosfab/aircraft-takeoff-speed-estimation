@@ -27,7 +27,7 @@ def sample_frame():
 
 @pytest.fixture
 def model_weights():
-    return str(MODELS_PATH / "yolov8x.pt")
+    return str(MODELS_PATH / "yolov8n.pt")
 
 
 @pytest.fixture
@@ -36,10 +36,16 @@ def polygon_points():
 
 
 @pytest.fixture
+def target_size():
+    return {"width": 300, "height": 260}
+
+
+@pytest.fixture
 def video_processor(
     video_path,
     model_weights,
     polygon_points,
+    target_size,
     confidence_threshold=0.25,
     nms_iou_threshold=0.15,
 ):
@@ -47,23 +53,10 @@ def video_processor(
         video_path,
         model_weights,
         polygon_points,
+        target_size,
         confidence_threshold,
         nms_iou_threshold,
     )
-
-
-# Fixture to create a temporary YAML configuration file
-@pytest.fixture
-def config_yaml():
-    config = {
-        "detection": {"confidence_threshold": 0.2, "nms_iou_threshold": 0.1},
-        "source": [[642, 784], [1960, 881], [1146, 1009], [-161, 852]],
-        "target": {"width": 300, "height": 260},
-    }
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".yaml") as tmp:
-        yaml.dump(config, tmp)
-        yield tmp.name
-    os.remove(tmp.name)
 
 
 def test_load_yolo_model(video_processor, video_path):
@@ -109,7 +102,7 @@ def test_video_processor_polygon_zone(video_processor):
 
 
 def test_save_processed_video(video_processor):
-    video_processor.process_video()
+    video_processor.process_video(visualize=False)
 
     # Check if the output file exists
     assert os.path.exists(video_processor.output_path), "Output file does not exist"

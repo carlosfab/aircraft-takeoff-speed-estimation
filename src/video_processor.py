@@ -61,8 +61,8 @@ class VideoProcessor:
         )
         self.tracker = sv.ByteTrack()
         self.initialize_annotators()
-        self.target = self._get_target_coordinates(target_size)
-        self.view_transformer = ViewTransformer(polygon_points, self.target)
+        self.target_points = self._get_target_coordinates(target_size)
+        self.view_transformer = ViewTransformer(polygon_points, self.target_points)
         self.speed_estimator = SpeedEstimator(self.video_info.fps)
 
     def process_video(self, visualize: bool = True) -> None:
